@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Beverage Catalog</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/stylesheets/bootstrap.min.css' />
+    <link rel='stylesheet' href='/stylesheets/toastr.min.css' />
+    <link rel='stylesheet' href='/stylesheets/font-awesome.min.css' />
+    <script type='text/javascript' src='/javascripts/jquery-3.3.1.min.js'></script>
+    <script type='text/javascript' src='/javascripts/bootstrap.min.js'></script>
+    <script type='text/javascript' src='/javascripts/toastr.min.js'></script>
+    <script type='text/javascript'>
+        $(document).ready(function() {
+            $('tr.bev .delete').click(function() {
+                var bevId = $(this).closest('tr').attr('data-bev-id');
+                $.ajax({
+                    type: 'DELETE',
+                    data: { id: bevId },
+                    url: '/bev',
+                    success: function (result) {
+                        if (result.success) {
+                            window.location.reload();
+                        } else {
+                            toastr.error('Something went wrong!');
+                        }
+                    }
+                });
+            });
+            $('tr.comment .delete').click(function() {
+                var commentId = $(this).closest('tr').attr('data-comment-id');
+                $.ajax({
+                    type: 'DELETE',
+                    data: { id: commentId },
+                    url: '/bev',
+                    success: function (result) {
+                        if (result.success) {
+                            window.location.reload();
+                        } else {
+                            toastr.error('Something went wrong!');
+                        }
+                    }
+                });
+            });
+
+            $('#save-beverage').click(function() {
+                var newName = $('#beverage-name').val();
+                if ($.trim(newName) === '') {
+                    toastr.error('You must provide a beverage name to store one.');
+                    return;
+                }
+                $.ajax({
+                    type: 'POST',
+                    data: { name: newName },
+                    url: '/bev/save',
+                    success: function (result) {
+                        if (result.success) {
+                            toastr.success(newName + ' has been saved!');
+                            $('#add-bev-modal').modal('hide');
+                            window.location.reload();
+                        } else {
+                            toastr.error('Something went wrong!');
+                        }
+                    }
+                });
+            });
+            $('#add-bev-modal').on('shown.bs.modal', function(e) {
+                $('#beverage-name').focus();
+            });
+        });
+    </script>
+  </head>
+  <body>
+    <div class='container'>
+        <div class='row'>
+            <div class='col-xs-12'>
+                <table class='table'>
+                	<thead>
+                		<tr>
+                			<th>Beverage Name</th>
+                            <th>
+                                <span class='btn btn-sm btn-success' id='add-beverage' title='Add a beverage' data-toggle="modal" data-target="#add-bev-modal">
+                                    <i class='fa fa-plus'></i>
+                                </span>
+                            </th>
+                		</tr>
+                	</thead>
+                	<tbody>
+                		<% beverages.forEach(function(b) { %>
+                		<tr class='bev' data-bev-id='<%= b.item_id %>'>
+                			<td><%=b.name %></td>
+                            <td>
+                                <span class='btn btn-sm btn-danger delete float-right' title='Delete this beverage'><i class='fa fa-remove'></i></span>
+                            </td>
+                		</tr>
+                		  <% b.comments.forEach(function(c) { %>
+            	    		<tr class='comment' data-comment-id='<%= c.comment_id %>'>
+            	    			<td><%=c.comment_text %> by <%=c.saved_by %> at <%=c.saved_at %></td>
+                                <td>
+                                    <span class='btn btn-sm btn-danger delete float-right' title='Delete this comment'><i class='fa fa-remove'></i></span>
+                                </td>
+            	    		</tr>
+                		  <% }); %>
+                		<% }); %>
+                	</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<div class="modal fade" id="add-bev-modal" tabindex="-1" role="dialog" aria-labelledby="add-bev-modal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Add a beverage</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form class='form'>
+            <label for='beverage-name'>Name</label>
+            <input type='text' maxlength="100" id='beverage-name' class='form-control' placeholder="Beverage Name">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id='save-beverage'>Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+  </body>
+</html>
